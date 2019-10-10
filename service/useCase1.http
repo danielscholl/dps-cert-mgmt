@@ -97,7 +97,7 @@ Content-Type: application/json
 @dg-etag = {{dg.response.body.eTag}}
 
 
-###  CREATE GroupRecord   (Group Authentication X509CA)
+###  CREATE GroupRecord
 # @name gr
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}

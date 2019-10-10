@@ -1,4 +1,4 @@
-# Use Case 2 - Provision Device using common Symmectric Key
+# Use Case 2 - Provision Devices in Bulk using Symmetric Key
 
 # -----------------------
 # Setup Variables
@@ -7,7 +7,8 @@
 @provisionSettings = {{unique}}ProvisionSettings
 @deviceGroup = {{unique}}DeviceGroup
 @groupRecord = {{unique}}GroupRecord
-@device = {{unique}}Device
+@device1 = {{unique}}Device1
+@device2 = {{unique}}Device2
 @symmetricKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -103,25 +104,33 @@ Content-Type: application/json
 
 
 ###  CREATE DeviceRecord
-# @name dr
-PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+# @name dr1
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device1}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "deviceId": "{{device}}",
+  "deviceId": "{{device1}}",
   "status": "enabled",
-  "authenticationMechanisms": [
-    {
-      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
-      "symmetricKey": "{{symmetricKey}}"
-    }
-  ],
   "deviceGroupName": "{{deviceGroup}}"
 }
 
-@dr-etag = {{dr.response.body.eTag}}
+@dr1-etag = {{dr1.response.body.eTag}}
 
+
+###  CREATE DeviceRecord
+# @name dr2
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device2}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "deviceId": "{{device2}}",
+  "status": "enabled",
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+@dr2-etag = {{dr2.response.body.eTag}}
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -157,14 +166,22 @@ Content-Type: application/json
 @gr-etag = {{gr.response.body.eTag}}
 
 
-
 ### GET DeviceRecord
-# @name dr
-GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+# @name dr1
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device1}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
-@dr-etag = {{dr.response.body.eTag}}
+@dr1-etag = {{dr1.response.body.eTag}}
+
+
+### GET DeviceRecord
+# @name dr2
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device2}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@dr2-etag = {{dr2.response.body.eTag}}
 
 
 # -----------------------------------------------------------------------------------------------------------------------
