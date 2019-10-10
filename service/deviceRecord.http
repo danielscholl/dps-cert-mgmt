@@ -1,0 +1,61 @@
+# -----------------------
+# Setup Variables
+# -----------------------
+@unique = myModel
+@deviceGroup = {{unique}}DeviceGroup
+@device = {{unique}}DeviceId
+@symmetricKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
+
+
+# -----------------------
+# Authentication
+# -----------------------
+
+@authUrl = login.microsoftonline.com/{{TENANT_ID}}
+@resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
+
+###
+# @name login
+POST https://{{authUrl}}/oauth2/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SECRET}}&resource={{resource}}
+
+@authToken = {{login.response.body.access_token}}
+
+
+# -----------------------
+# Device Record
+# -----------------------
+
+###
+# @name http
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "deviceId": "{{device}}",
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
+      "symmetricKey": "{{symmetricKey}}"
+    }
+  ],
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+###
+# @name http
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@etag = {{http.response.body.eTag}}
+
+###
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{etag}}

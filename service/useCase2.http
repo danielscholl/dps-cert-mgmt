@@ -1,0 +1,197 @@
+# Use Case 2 - Provision Device using common Symmectric Key
+
+# -----------------------
+# Setup Variables
+# -----------------------
+@unique = uc2
+@provisionSettings = {{unique}}ProvisionSettings
+@deviceGroup = {{unique}}DeviceGroup
+@groupRecord = {{unique}}GroupRecord
+@device = {{unique}}Device
+@symmetricKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# Authentication
+# -----------------------
+
+@authUrl = login.microsoftonline.com/{{TENANT_ID}}
+@resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
+
+###  OAUTH 2.0 Login
+# @name login
+POST https://{{authUrl}}/oauth2/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SECRET}}&resource={{resource}}
+
+@authToken = {{login.response.body.access_token}}
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# Create Object Model
+# -----------------------
+
+
+###  CREATE ProvisionSettings
+# @name ps
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{provisionSettings}}",
+  "initialTwin": {
+    "tags": {
+      "clean": true
+    },
+    "properties": {
+      "desired": {}
+    }
+  },
+  "reprovisioningSettings": {
+    "updateHubAssignment": true,
+    "migrateDeviceData": false
+  },
+  "assignmentMethod": {
+    "assignmentType": "HashedAssignmentMethod",
+    "targetHubs": [
+      "{{HUB_HOST}}.azure-devices.net"
+    ]
+  }
+}
+
+@ps-etag = {{ps.response.body.eTag}}
+
+
+###  CREATE DeviceGroup
+# @name dg
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{deviceGroup}}",
+  "provisioningSettingsName": "{{provisionSettings}}",
+}
+
+@dg-etag = {{dg.response.body.eTag}}
+
+
+###  CREATE GroupRecord
+# @name gr
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{groupRecord}}",
+  "isEdge": false,
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "groupAuthenticationType": "SymmetricKeyGroupAuthenticationMechanism",
+      "symmetricKey": "{{symmetricKey}}"
+    }
+  ],
+
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+@gr-etag = {{gr.response.body.eTag}}
+
+
+###  CREATE DeviceRecord
+# @name dr
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "deviceId": "{{device}}",
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
+      "symmetricKey": "{{symmetricKey}}"
+    }
+  ],
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+@dr-etag = {{dr.response.body.eTag}}
+
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# Get Object Model
+# -----------------------
+
+
+###  GET ProvisionSettings
+# @name ps
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@ps-etag = {{ps.response.body.eTag}}
+
+
+###  GET DeviceGroup
+# @name dg
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@dg-etag = {{dg.response.body.eTag}}
+
+
+###  GET GroupRecord
+# @name gr
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@gr-etag = {{gr.response.body.eTag}}
+
+
+
+### GET DeviceRecord
+# @name dr
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@dr-etag = {{dr.response.body.eTag}}
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# Delete Object Model
+# -----------------------
+
+### DELETE DeviceRecord
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{dr-etag}}
+
+### DELETE DeviceGroup
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{dg-etag}}
+
+### DELETE GroupRecord
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{gr-etag}}
+
+### DELETE ProvisionSettings
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{ps-etag}}
