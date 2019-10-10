@@ -1,0 +1,93 @@
+# Use Case 4 - Provision Device Using x509
+# -----------------------
+# Setup Variables
+# -----------------------
+@unique = uc4
+@provisionSettings = {{unique}}ProvisionSettings
+@deviceGroup = {{unique}}DeviceGroup
+@groupRecord = {{unique}}GroupRecord
+@device = {{unique}}Device
+@x509 = LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tIE1JSUZKVENDQXcyZ0F3SUJBZ0lCQXpBTkJna3Foa2lHOXcwQkFRc0ZBREF1TVN3d0tnWURWUVFERENOSmJuUmwgY20x bFpHbGhkR1VnUTBFZ1EyVnlkQ0F0SUdSaGJtbGxiSE5qYUc5c2JEQWVGdzB4T1RBNU1UTXhPVEEwTkRoYSBGdzB5TURBNU1EY3hPVEEwTkRoYU1Ca3hGekFWQmdOVkJB TU1EbVZrWjJVdGRXSjFiblIxTG1OaE1JSUNJakFOIEJna3Foa2lHOXcwQkFRRUZBQU9DQWc4QU1JSUNDZ0tDQWdFQXZZclZVdWM4eDRpdTdkR2o0VkwvbERrOGcvV3Eg cGV0TW14eThRQlVIY3UvMzdHUHV3TU14TXNFMk96aWNaUFYrQUVuK0ZybWMvS3ZraXc5NlhyVHR2T1A4enNaOCBKUDZpWWtHQzVjMjUyTEVkWG5HZi9LY2ZZcGlZRFNq aHhCbmFCaTdHUEtoOHV0MzNFaHhXS3RnMkh6UWVMaFlaIEpqOS9aZ3ZKSXZKcFVvUDJOU2ZQNlpWYlY0Rnplc2xSRUR5d3lKUXc4cTlYRFdiektpL1BkWFJ0dTJnTXQ2 T0cgcjlYUGxac1Q4OERwRk1RSzlzK1Jlb1d1bjlxQnhtWmtBYWNaOUIrY2tDejFNbzhBTmlkU0xrbkVFcTU5eU1jSCBxbGx0bEtvb21jbmszTHlsQzhtemN2Q1ZSZlBI TXkyRVRlR3IvNGRHMjZPSm5uVEtTMjM3ZjNvejRaZHE2YXUyIHBnUVpZbkYvOUxCWlltSm93TTcyWmZuVkZKYkNPWW8xdUpXT0xKTDZvcThWR25YODNhTXlIa0dLdjBM a2YyeDEgb2tyVlZQejExODc1bHNNbDhPNGtaK3c5YUxpanJzYjArYUFCRml2R3pMb0RRVFQrQXJBN1o0RUVhM2ZEUCttcSBGVGZxMkg4WWVpV3lZTUYySmVqVWNjUXBo TDgzSmMvYkZlU0FKMzlQMUZxYmxVTGFOeXNTL1UrYStFdFp3RkdLIGl2VlE0OWttQ1NNTGN2QWtzbkhTWDl0ampRTW10K1RtWXlvcndER2NZMmxxYUJSNXFBMGZod3Ay YThSQWxBdkMgOXlVUGRyV3lEUllRdFlXcWVCNmNGU3MwMS8wWWZYV21QaTliQ2ppWWxublFnTkM4WUREMHNvVFA5U25MS3FBViBZSmEwdUsrcjFIT05JSlVDQXdFQUFh TmpNR0V3SFFZRFZSME9CQllFRkluM2FtcDEyMU9Sd1NDalFlS0k1aTQrIHJSNFVNQjhHQTFVZEl3UVlNQmFBRkhzWU9mcDhWTXVsK0I2VHZVeTJjM2Y0RnQ2dk1BOEdB MVVkRXdFQi93UUYgTUFNQkFmOHdEZ1lEVlIwUEFRSC9CQVFEQWdHR01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQ0FRQkU2VzRkRjdvdCBuaG9oR0VyMy9jRW84bUV2Y0cz KzJEanlFM01EckhBNjRpNkRWc2JweXZtZm9oM25xV2sxL2hQUzhCay9JUGdXIFNUY2RUMkw5elQxZE5RVzF5Nk9aN3VNQTgyOGdMalRlNlo2bURFRnZCTkhVdC8rQkE3 bGlWd1Z3R2NwUHdrNk8gMVFwWEE3STFBVkY4dXRqN2YvMXRpWHdzdldjRzRtMDIxRmxCQmU2SURKNzFZVkFaRkErRkdvR1JxL1BPdjQ0NyBoNVNYRTFXbnJqYnV1d01r VUwrZVRKajcrSUdyUEcxVDRpeWNydUdQWGFtTCtmS0ExY3M2TWpiOUdhQU9HWDhtIDJwN2R0WW9zenhBWDFlaU4xQkhHdFpNYmpKS2tXNG9iTCtXamtoaWt6a3NJOUJD ajluZmVNQ3hKN2dGMTk3T1MgMHkrL3hPbzFxaUxhZUdHLzd6ZHJMV29CYkFhaFQzVWRlUTFoa0FqOW5aNDQzTEtja1Q0eVBjM29tbEhOd3VFNSBvRWFWaW9sRFpOVXcv Z09RWGxJRVJQbU96dkt4UTBkV1hVNWdhR1dUZithR3B4aHRNdUJtclVOM2xOa2hmMEJ2IHppUm0wM3dBZ1RnblVaS05rM2VUNkxKLzY4NlhydjRBTTJ5ZEhoYmRqN2Zs aTZwZzU5WHBnZFpmZFErOTRDSk0gYXlDVklHRDcyRlRYckpVTVduWXE5YjNJdkU4dVFGYnNoSzl3aTExb3JzeW8veWpncmVHMnlsWUttdWNrM0gzTCA2SkdQcUwrbDRQ ZHlCMzhHL0JsRmJJWUhrUHZqVEVHa2ltR3hqZzgxdEkxUGhJZU1iODBNR2l6bDhsUGYzUk16IFNGaDUxS2VCMUNUU2Vydlg0WGtqa1d6RDdsVFlWb0lwUFE9PSAtLS0t LUVORCBDRVJUSUZJQ0FURS0tLS0t
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# Authentication
+# -----------------------
+
+@authUrl = login.microsoftonline.com/{{TENANT_ID}}
+@resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
+
+###  OAUTH 2.0 Login
+# @name login
+POST https://{{authUrl}}/oauth2/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SECRET}}&resource={{resource}}
+
+@authToken = {{login.response.body.access_token}}
+
+###  CREATE ProvisionSettings
+# @name ps
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{provisionSettings}}",
+  "initialTwin": {
+    "tags": {
+      "clean": true
+    },
+    "properties": {
+      "desired": {}
+    }
+  },
+  "reprovisioningSettings": {
+    "updateHubAssignment": true,
+    "migrateDeviceData": false
+  },
+  "assignmentMethod": {
+    "assignmentType": "HashedAssignmentMethod",
+    "targetHubs": [
+      "{{HUB_HOST}}.azure-devices.net"
+    ]
+  }
+}
+
+@ps-etag = {{ps.response.body.eTag}}
+
+
+###  CREATE DeviceGroup
+# @name dg
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{deviceGroup}}",
+  "provisioningSettingsName": "{{provisionSettings}}",
+}
+
+@dg-etag = {{dg.response.body.eTag}}
+
+
+###  CREATE DeviceRecord
+# @name dr
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "deviceId": "{{device}}",
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "X509CertificateDeviceAuthenticationMechanism",
+      "certificate": "{{x509}}"
+    }
+  ],
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+@dr-etag = {{dr.response.body.eTag}}
+

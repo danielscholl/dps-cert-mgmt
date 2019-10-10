@@ -80,23 +80,6 @@ Content-Type: application/json
 @dg-etag = {{dg.response.body.eTag}}
 
 
-###  CREATE GroupRecord
-# @name gr
-PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "name": "{{groupRecord}}",
-  "isEdge": false,
-  "status": "enabled",
-
-  "deviceGroupName": "{{deviceGroup}}"
-}
-
-@gr-etag = {{gr.response.body.eTag}}
-
-
 ###  CREATE DeviceRecord
 # @name dr
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
@@ -141,16 +124,6 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @dg-etag = {{dg.response.body.eTag}}
-
-
-###  GET GroupRecord
-# @name gr
-GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-@gr-etag = {{gr.response.body.eTag}}
-
 
 
 ### GET DeviceRecord
