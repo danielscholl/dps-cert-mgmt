@@ -9,7 +9,9 @@
 @groupRecord = {{unique}}GroupRecord
 @device1 = {{unique}}Device1
 @device2 = {{unique}}Device2
-@symmetricKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
+@masterKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
+@derivedKey1 = 4HRdv5tR38GC+jxlkdHGkStjaYpSoJt9OD9zOKIPu6I=
+@derivedKey2 = ZE92Bv06mh5OysTi0+jBr25oW7gj3jnDnoSVorZ92dY=
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------
@@ -93,7 +95,7 @@ Content-Type: application/json
   "authenticationMechanisms": [
     {
       "groupAuthenticationType": "SymmetricKeyGroupAuthenticationMechanism",
-      "symmetricKey": "{{symmetricKey}}"
+      "symmetricKey": "{{masterKey}}"
     }
   ],
 
@@ -112,6 +114,12 @@ Content-Type: application/json
 {
   "deviceId": "{{device1}}",
   "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
+      "endorsementKey": "{{derivedKey1}}"
+    }
+  ],
   "deviceGroupName": "{{deviceGroup}}"
 }
 
@@ -127,6 +135,12 @@ Content-Type: application/json
 {
   "deviceId": "{{device2}}",
   "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
+      "endorsementKey": "{{derivedKey2}}"
+    }
+  ],
   "deviceGroupName": "{{deviceGroup}}"
 }
 
