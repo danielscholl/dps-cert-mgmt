@@ -55,6 +55,17 @@ Content-Type: application/json
 
 ###
 # @name http
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
+
+###
+# @name http
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json

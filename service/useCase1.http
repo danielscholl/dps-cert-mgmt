@@ -112,8 +112,7 @@ Content-Type: application/json
       "groupAuthenticationType": "X509CAReferenceGroupAuthenticationMechanism",
       "certificateAuthorityName": "{{certificateAuthority}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @gr-etag = {{gr.response.body.eTag}}
@@ -133,8 +132,7 @@ Content-Type: application/json
       "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
       "symmetricKey": "{{symmetricKey}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @dr-etag = {{dr.response.body.eTag}}
@@ -144,6 +142,15 @@ Content-Type: application/json
 # -----------------------
 # Get Object Model
 # -----------------------
+
+
+###
+# @name ca
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@ca-etag = {{ca.response.body.eTag}}
 
 
 ###  GET ProvisionSettings
@@ -164,13 +171,33 @@ Content-Type: application/json
 @dg-etag = {{dg.response.body.eTag}}
 
 
-###  GET GroupRecord
+### List GroupRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
+
+###  GET GroupRecords
 # @name gr
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @gr-etag = {{gr.response.body.eTag}}
+
+
+### LIST DeviceRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
 
 
 ### GET DeviceRecord
@@ -210,3 +237,9 @@ DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 If-Match: {{ps-etag}}
+
+### DELETE CertificateAuthority
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{ca-etag}}

@@ -44,9 +44,19 @@ Content-Type: application/json
       "groupAuthenticationType": "X509CAReferenceGroupAuthenticationMechanism",
       "certificateAuthorityName": "{{certificateAuthority}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
+
+###
+# @name http
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
 
 ###
 # @name http
@@ -55,6 +65,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @etag = {{http.response.body.eTag}}
+
 
 ###
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01

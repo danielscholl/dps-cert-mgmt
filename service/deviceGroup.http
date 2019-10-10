@@ -37,6 +37,18 @@ Content-Type: application/json
   "provisioningSettingsName": "{{provisionSettings}}",
 }
 
+
+###
+# @name http
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
+
 ###
 # @name http
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
@@ -44,6 +56,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @etag = {{http.response.body.eTag}}
+
 
 ###
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01

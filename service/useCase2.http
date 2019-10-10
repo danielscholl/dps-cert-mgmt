@@ -97,15 +97,13 @@ Content-Type: application/json
       "groupAuthenticationType": "SymmetricKeyGroupAuthenticationMechanism",
       "symmetricKey": "{{masterKey}}"
     }
-  ],
-
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @gr-etag = {{gr.response.body.eTag}}
 
 
-###  CREATE DeviceRecord
+###  CREATE DeviceRecord  ** NOTE:  DeviceRecords are created automatically at time of Provisioning.
 # @name dr1
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device1}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
@@ -117,16 +115,15 @@ Content-Type: application/json
   "authenticationMechanisms": [
     {
       "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
-      "endorsementKey": "{{derivedKey1}}"
+      "symmetricKey": "{{derivedKey1}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @dr1-etag = {{dr1.response.body.eTag}}
 
 
-###  CREATE DeviceRecord
+###  CREATE DeviceRecord  ** NOTE:  DeviceRecords are created automatically at time of Provisioning.
 # @name dr2
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device2}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
@@ -138,10 +135,9 @@ Content-Type: application/json
   "authenticationMechanisms": [
     {
       "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
-      "endorsementKey": "{{derivedKey2}}"
+      "symmetricKey": "{{derivedKey2}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @dr2-etag = {{dr2.response.body.eTag}}
@@ -171,6 +167,16 @@ Content-Type: application/json
 @dg-etag = {{dg.response.body.eTag}}
 
 
+### List GroupRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
+
 ###  GET GroupRecord
 # @name gr
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
@@ -178,6 +184,16 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @gr-etag = {{gr.response.body.eTag}}
+
+
+### LIST DeviceRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
 
 
 ### GET DeviceRecord
@@ -204,10 +220,16 @@ Content-Type: application/json
 # -----------------------
 
 ### DELETE DeviceRecord
-DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device1}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
-If-Match: {{dr-etag}}
+If-Match: {{dr1-etag}}
+
+### DELETE DeviceRecord
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device2}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{dr2-etag}}
 
 ### DELETE DeviceGroup
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01

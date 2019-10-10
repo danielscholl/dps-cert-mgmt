@@ -42,9 +42,20 @@ Content-Type: application/json
       "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
       "symmetricKey": "{{symmetricKey}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
+
+
+###
+# @name http
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
 
 ###
 # @name http
@@ -53,6 +64,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @etag = {{http.response.body.eTag}}
+
 
 ###
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
