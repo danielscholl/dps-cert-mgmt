@@ -1,0 +1,76 @@
+# -----------------------
+# Group Enrollment
+# -----------------------
+
+@unique = zzz
+@deviceGroup = {{unique}}DeviceGroup
+@device = {{unique}}Device
+
+###
+# @name serviceToken
+POST https://dpsprivatepreview.azurewebsites.net/api/ServiceToken
+
+{
+  "connectionString": "{{DPS_CONNECTIONSTRING}}"
+}
+
+@serviceSAS = {{serviceToken.response.body.outputs.sasToken}}
+
+###
+# @name enrollmentGroup
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+Content-Type: application/json
+
+{
+  "enrollmentGroupId": "{{deviceGroup}}",
+  "allocationPolicy": "hashed",
+  "attestation": {
+    "type": "symmetricKey",
+    "symmetricKey": {
+      "primaryKey": "{{PRIMARY_KEY}}",
+      "secondaryKey": "{{SECONDARY_KEY}}"
+    }
+  },
+  "capabilities": {
+    "iotEdge": false
+  },
+  "provisioningStatus": "enabled",
+  "reprovisionPolicy": {
+    "updateHubAssignment": true,
+    "migrateDeviceData": true
+  },
+  "iotHubs": [
+    "{{HUB_HOST}}.azure-devices.net"
+  ]
+}
+
+@accessKey = {{enrollmentGroup.response.body.attestation.symmetricKey.primaryKey}}
+
+
+###
+# @name deviceToken
+POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
+
+{
+  "registrationId": "{{device}}",
+  "idScope": "{{ID_SCOPE}}",
+  "symmetricKey": "{{accessKey}}"
+}
+
+@deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
+
+###
+PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-03-31
+Authorization: {{deviceSAS}}
+Content-Type: application/json
+
+{
+  "registrationId": "{{device}}",
+  "payload": {}
+}
+
+###
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+Content-Type: application/json

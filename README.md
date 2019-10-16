@@ -37,14 +37,27 @@ az ad sp create-for-rbac --name $SP_NAME
     "CLIENT_ID": "<appId>",
     "CLIENT_SECRET": "<password>",
     "DPS_HOST" : "<dps>",
-    "HUB_HOST": "<hub>"
+    "HUB_HOST": "<hub>",
+    "ID_SCOPE": "<dps_scopeId>",
+    "DPS_CONNECTIONSTRING": "<provisioningserviceowner_connectionstring>",
+    "PRIMARY_KEY": "<primary_key>",
+    "SECONDARY_KEY": "<secondary_key>"
   }
 }
 ```
 ## Send the requests via the desired {file}.http
 
-__service/{file}.http__  _(Examples for calling the API)_
+### API-VERSION = 2019-03-01
 
-1. Use Case 1 - Provision Devices in Bulk using DPS CA
-2. Use Case 2 - Provision Devices in Bulk using Symmetric Key
-3. Use Case 3 - Provision 2 Individual Devices 1 Using TPM and the other Symmetric Key
+1. Use Case 1 -- Individual Enrollement using Symmetric Key
+2. Use Case 2 -- Group Enrollment using Symmetric Keys and Derived Keys
+
+
+### API-VERSION = 2019-05-01
+
+1. Use Case 1 -- Provision 1 Device using Symmetric Key
+2. Use Case 2 -- Provision 1 Device using TPM
+3. Use Case 3 -- Provision 1 Device using x509
+3. Use Case 4 -- Provision 1 Device using DPS CA
+4. Use Case 5 -- Provision Devices in Bulk using Symmetric Key
+
