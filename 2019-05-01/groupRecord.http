@@ -9,14 +9,12 @@
 
 
 # -----------------------
-# Authentication
-# -----------------------
-
+# Get OAuth 2 Token
+###
+# @name login
 @authUrl = login.microsoftonline.com/{{TENANT_ID}}
 @resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
 
-###
-# @name login
 POST https://{{authUrl}}/oauth2/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
@@ -25,12 +23,11 @@ grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SEC
 @authToken = {{login.response.body.access_token}}
 
 
-# -----------------------
-# Group Record
-# -----------------------
 
+# -----------------------
+# API: groupRecords
 ###
-# @name http
+# @name createGR
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -47,8 +44,12 @@ Content-Type: application/json
   ]
 }
 
+
+
+# -----------------------
+# API: groupRecords
 ###
-# @name http
+# @name queryGR
 POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/query?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -58,16 +59,28 @@ Content-Type: application/json
 }
 
 
+
+# -----------------------
+# API: groupRecords
 ###
-# @name http
+# @name getGR
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
-@etag = {{http.response.body.eTag}}
+@etag = {{getGR.response.body.eTag}}
 
 
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#      ** caution only delete when fully done due  **
+# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------
+# API: groupRecords
 ###
+# @name deleteGR
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json

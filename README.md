@@ -55,9 +55,10 @@ az ad sp create-for-rbac --name $SP_NAME
 
 ### API-VERSION = 2019-05-01
 
-1. Use Case 1 -- Provision 1 Device using Symmetric Key
-2. Use Case 2 -- Provision 1 Device using TPM
-3. Use Case 3 -- Provision 1 Device using x509
-3. Use Case 4 -- Provision 1 Device using DPS CA
-4. Use Case 5 -- Provision Devices in Bulk using Symmetric Key
+3. Use Case 3 -- Provision Device Using Symmetric Key and new Object Model
+4. Use Case 4 -- Provision Device Using TPM and new Object Model
+5. Use Case 5 -- Provision Device Using x509 and new Object Model
+6. Use Case 6 -- Provision Device using DPS CA and new Object Model
+7. Use Case 7 -- Provision Devices in Bulk using Symmetric Key and new Object Model
+
 

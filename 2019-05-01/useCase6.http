@@ -1,15 +1,15 @@
-# Use Case 1 - Provision Device Using Symmetric Key
+# Use Case 6 -- Provision Device using DPS CA and new Object Model
 
 # -----------------------
 # Setup Variables
 # -----------------------
-@unique = uc1
+@unique = uc6
+@certificateAuthority = {{unique}}CertificateAuthority
 @provisionSettings = {{unique}}ProvisionSettings
 @deviceGroup = {{unique}}DeviceGroup
 @groupRecord = {{unique}}GroupRecord
 @device = {{unique}}Device
-@key = {{PRIMARY_KEY}}
-
+@symmetricKey = 3aJ5MwKxtOjfGSgsZ8NnMa2G3wySnVnW
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------
@@ -34,6 +34,19 @@ grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SEC
 # Create Object Model
 # -----------------------
 
+###  CREATE CertificateAuthority
+# @name ca
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name:": "{{certificateAuthority}}",
+  "certificateAuthorityType": "PrivatePreviewManagedCertificateAuthority"
+}
+
+@ca-etag = {{ca.response.body.eTag}}
+
 
 ###  CREATE ProvisionSettings
 # @name ps
@@ -50,6 +63,10 @@ Content-Type: application/json
     "properties": {
       "desired": {}
     }
+  },
+  "certificateIssuancePolicy": {
+    "certificateAuthorityName": "{{certificateAuthority}}",
+    "validityPeriod": "P1D"
   },
   "reprovisioningSettings": {
     "updateHubAssignment": true,
@@ -80,6 +97,27 @@ Content-Type: application/json
 @dg-etag = {{dg.response.body.eTag}}
 
 
+###  CREATE GroupRecord
+# @name gr
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "{{groupRecord}}",
+  "isEdge": false,
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "groupAuthenticationType": "X509CAReferenceGroupAuthenticationMechanism",
+      "certificateAuthorityName": "{{certificateAuthority}}"
+    }
+  ]
+}
+
+@gr-etag = {{gr.response.body.eTag}}
+
+
 ###  CREATE DeviceRecord
 # @name dr
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
@@ -92,7 +130,7 @@ Content-Type: application/json
   "authenticationMechanisms": [
     {
       "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
-      "symmetricKey": "{{PRIMARY_KEY}}"
+      "symmetricKey": "{{symmetricKey}}"
     }
   ]
 }
@@ -100,40 +138,19 @@ Content-Type: application/json
 @dr-etag = {{dr.response.body.eTag}}
 
 
-
-# -----------------------------------------------------------------------------------------------------------------------
-# -----------------------
-# REGISTER DEVICE
-# -----------------------
-
-###
-# @name deviceToken
-POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
-
-{
-  "registrationId": "{{device}}",
-  "idScope": "{{ID_SCOPE}}",
-  "symmetricKey": "{{PRIMARY_KEY}}"
-}
-
-@deviceTokenSAS = {{deviceToken.response.body.outputs.sasToken}}
-
-
-###
-PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-05-01
-Authorization: {{deviceTokenSAS}}
-Content-Type: application/json
-
-{
-  "registrationId": "{{device}}",
-  "payload": {}
-}
-
-
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------
 # Get Object Model
 # -----------------------
+
+
+###
+# @name ca
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@ca-etag = {{ca.response.body.eTag}}
 
 
 ###  GET ProvisionSettings
@@ -152,6 +169,35 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 @dg-etag = {{dg.response.body.eTag}}
+
+
+### List GroupRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
+
+
+###  GET GroupRecords
+# @name gr
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@gr-etag = {{gr.response.body.eTag}}
+
+
+### LIST DeviceRecords
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/query?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "queryType": "QueryAll"
+}
 
 
 ### GET DeviceRecord
@@ -191,3 +237,9 @@ DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 If-Match: {{ps-etag}}
+
+### DELETE CertificateAuthority
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{ca-etag}}

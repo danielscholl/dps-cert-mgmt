@@ -1,23 +1,28 @@
-# -----------------------
-# Group Enrollment
-# -----------------------
+# Use Case 2 -- Group Enrollment using Symmetric Keys and Derived Keys
 
-@unique = zzz
+@unique = uc2
 @deviceGroup = {{unique}}DeviceGroup
 @device = {{unique}}Device
 
+
+# -----------------------
+# Get DPS Access Token
 ###
-# @name serviceToken
+# @name dpsToken
 POST https://dpsprivatepreview.azurewebsites.net/api/ServiceToken
 
 {
   "connectionString": "{{DPS_CONNECTIONSTRING}}"
 }
 
-@serviceSAS = {{serviceToken.response.body.outputs.sasToken}}
+@serviceSAS = {{dpsToken.response.body.outputs.sasToken}}
 
+
+
+# -----------------------
+# Group Enrollment
 ###
-# @name enrollmentGroup
+# @name createEnrollment
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}?api-version=2019-03-31
 Authorization: {{serviceSAS}}
 Content-Type: application/json
@@ -45,9 +50,45 @@ Content-Type: application/json
   ]
 }
 
-@accessKey = {{enrollmentGroup.response.body.attestation.symmetricKey.primaryKey}}
+@accessKey = {{createEnrollment.response.body.attestation.symmetricKey.primaryKey}}
 
 
+# -----------------------
+# Individual Enrollment
+###
+# @name getEnrollment
+
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+
+
+
+# -----------------------
+# AttestationMechanism
+###
+# @name getAttestation
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}/attestationmechanism?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+
+@accessKey = {{getAttestation.response.body.symmetricKey.primaryKey}}
+
+
+# -----------------------
+# Get Device Derived Key
+###
+# @name derivedKey
+POST https://dpsprivatepreview.azurewebsites.net/api/DerivedKey
+
+{
+  "registrationId": "{{device}}",
+  "symmetricKey": "{{accessKey}}"
+}
+
+@deviceKey = {{derivedKey.response.body.outputs.derivedKey}}
+
+
+# -----------------------
+# Get Device Access Token
 ###
 # @name deviceToken
 POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
@@ -55,10 +96,12 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
 {
   "registrationId": "{{device}}",
   "idScope": "{{ID_SCOPE}}",
-  "symmetricKey": "{{accessKey}}"
+  "symmetricKey": "{{deviceKey}}"
 }
 
 @deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
+
+
 
 ###
 PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-03-31
@@ -70,7 +113,12 @@ Content-Type: application/json
   "payload": {}
 }
 
+# ----------------------------------------------------------------------------------------------------------------------
+#      ** caution only delete when fully done due to caching time constraints **
+# ----------------------------------------------------------------------------------------------------------------------
+# Group Enrollment
 ###
+# @name deleteEnrollment
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollmentGroups/{{deviceGroup}}?api-version=2019-03-31
 Authorization: {{serviceSAS}}
 Content-Type: application/json

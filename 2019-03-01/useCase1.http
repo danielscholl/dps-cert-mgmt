@@ -1,14 +1,29 @@
-# -----------------------
-# Individual Enrollment
-# -----------------------
+# Use Case 1 -- Individual Enrollement using Symmetric Key
 
-@unique = zzz
+@unique = uc1
 @device = {{unique}}Device
 
+
+# -----------------------
+# Get DPS Access Token
 ###
-# @name enrollment
+# @name dpsToken
+POST https://dpsprivatepreview.azurewebsites.net/api/ServiceToken
+
+{
+  "connectionString": "{{DPS_CONNECTIONSTRING}}"
+}
+
+@serviceSAS = {{dpsToken.response.body.outputs.sasToken}}
+
+
+
+# -----------------------
+# Individual Enrollment
+###
+# @name createEnrollment
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollments/{{device}}?api-version=2019-03-31
-Authorization: {{DPS_TOKEN}}
+Authorization: {{serviceSAS}}
 Content-Type: application/json
 
 {
@@ -38,8 +53,29 @@ Content-Type: application/json
   ]
 }
 
-@accessKey = {{enrollment.response.body.attestation.symmetricKey.primaryKey}}
 
+# -----------------------
+# Individual Enrollment
+###
+# @name getEnrollment
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollments/{{device}}?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+
+
+
+# -----------------------
+# AttestationMechanism
+###
+# @name getAttestation
+POST https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollments/{{device}}/attestationmechanism?api-version=2019-03-31
+Authorization: {{serviceSAS}}
+
+@accessKey = {{getAttestation.response.body.symmetricKey.primaryKey}}
+
+
+
+# -----------------------
+# Get Device Access Token
 ###
 # @name deviceToken
 POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
@@ -50,12 +86,16 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
   "symmetricKey": "{{accessKey}}"
 }
 
-@deviceTokenSAS = {{deviceToken.response.body.outputs.sasToken}}
+@deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
 
 
+
+# -----------------------
+# Device Register
 ###
+# @name register
 PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-03-31
-Authorization: {{sasToken}}
+Authorization: {{deviceSAS}}
 Content-Type: application/json
 
 {
@@ -63,7 +103,13 @@ Content-Type: application/json
   "payload": {}
 }
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#      ** caution only delete when fully done due to caching time constraints **
+# ----------------------------------------------------------------------------------------------------------------------
+# Individual Enrollment
 ###
+# @name deleteEnrollment
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/enrollments/{{device}}?api-version=2019-03-31
-Authorization: {{DPS_TOKEN}}
+Authorization: {{serviceSAS}}
 Content-Type: application/json

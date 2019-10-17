@@ -1,8 +1,9 @@
-# Use Case 4 - Provision Device Using x509
+# Use Case 5 -- Provision Device Using x509 and new Object Model
+
 # -----------------------
 # Setup Variables
 # -----------------------
-@unique = uc4
+@unique = uc5
 @provisionSettings = {{unique}}ProvisionSettings
 @deviceGroup = {{unique}}DeviceGroup
 @groupRecord = {{unique}}GroupRecord
