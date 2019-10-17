@@ -78,7 +78,7 @@ Content-Type: application/json
 # -----------------------
 # API: deviceRecords
 ###
-# @name getDR
+# @name deleteDR
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json

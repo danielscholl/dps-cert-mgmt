@@ -103,7 +103,10 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
 
 
 
+# -----------------------
+# API: register
 ###
+# @name register
 PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-03-31
 Authorization: {{deviceSAS}}
 Content-Type: application/json
@@ -112,6 +115,8 @@ Content-Type: application/json
   "registrationId": "{{device}}",
   "payload": {}
 }
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #      ** caution only delete when fully done due to caching time constraints **

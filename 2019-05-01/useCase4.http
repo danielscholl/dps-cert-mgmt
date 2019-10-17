@@ -8,19 +8,16 @@
 @deviceGroup = {{unique}}DeviceGroup
 @groupRecord = {{unique}}GroupRecord
 @device = {{unique}}Device
-@tpmPublic = AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEA5DZrM0/0VxccrFqzhSg21VfG2mMR5OqHH70G67ZU5AiTk9eZWGWrYX+AAf7zclhPAFFG+L2HHD0rQWb1GJxrjDB7GM2mk2JvxaoYVe5e942ZyAQCwl959J989mY7FmoXtEjN8H7SECO6xrEPgfCMnXl8zens0Eo3/xpZT9dXVtaGhQu3RRDM4DwRWV8rDvfRB4Y/0dk8B/YQwe0mElAOpSU4EqZe+q27Julvnd9isg2VzZRfs10BlrgKWp1J7yyY+5NE5oB9Mzr+1pn6Vbtdg1d9BpUlfNMD1cKz3azsqSW8BFtX2zUJklfWFX+SFxsPB/mxw9pbLHfn8fJ+zm1TsQ==
+@tpmEndorsement = AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEA5DZrM0/0VxccrFqzhSg21VfG2mMR5OqHH70G67ZU5AiTk9eZWGWrYX+AAf7zclhPAFFG+L2HHD0rQWb1GJxrjDB7GM2mk2JvxaoYVe5e942ZyAQCwl959J989mY7FmoXtEjN8H7SECO6xrEPgfCMnXl8zens0Eo3/xpZT9dXVtaGhQu3RRDM4DwRWV8rDvfRB4Y/0dk8B/YQwe0mElAOpSU4EqZe+q27Julvnd9isg2VzZRfs10BlrgKWp1J7yyY+5NE5oB9Mzr+1pn6Vbtdg1d9BpUlfNMD1cKz3azsqSW8BFtX2zUJklfWFX+SFxsPB/mxw9pbLHfn8fJ+zm1TsQ==
 
 
-# -----------------------------------------------------------------------------------------------------------------------
 # -----------------------
-# Authentication
-# -----------------------
-
+# Get OAuth 2 Token
+###
+# @name login
 @authUrl = login.microsoftonline.com/{{TENANT_ID}}
 @resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
 
-###  OAUTH 2.0 Login
-# @name login
 POST https://{{authUrl}}/oauth2/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
@@ -29,14 +26,11 @@ grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SEC
 @authToken = {{login.response.body.access_token}}
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-# -----------------------
-# Create Object Model
-# -----------------------
 
-
-###  CREATE ProvisionSettings
-# @name ps
+# -----------------------
+# API: provisionSettings
+###
+# @name createPS
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -63,11 +57,12 @@ Content-Type: application/json
   }
 }
 
-@ps-etag = {{ps.response.body.eTag}}
 
 
-###  CREATE DeviceGroup
-# @name dg
+# -----------------------
+# API: deviceGroups
+###
+# @name createDG
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -77,11 +72,14 @@ Content-Type: application/json
   "provisioningSettingsName": "{{provisionSettings}}",
 }
 
-@dg-etag = {{dg.response.body.eTag}}
+@dr-etag = {{createDG.response.body.eTag}}
 
 
-###  CREATE DeviceRecord
-# @name dr
+
+# -----------------------
+# API: deviceRecords
+###
+# @name createDR
 PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -92,53 +90,98 @@ Content-Type: application/json
   "authenticationMechanisms": [
     {
       "deviceAuthenticationType": "TpmDeviceAuthenticationMechanism",
-      "endorsementKey": "{{tpmPublic}}"
+      "endorsementKey": "{{tpmEndorsement}}"
     }
   ],
   "deviceGroupName": "{{deviceGroup}}"
 }
 
-@dr-etag = {{dr.response.body.eTag}}
+@dr-etag = {{createDR.response.body.eTag}}
 
 
 
-# -----------------------------------------------------------------------------------------------------------------------
 # -----------------------
-# Get Object Model
+# Generate deviceToken
+###
+# @name deviceToken
+POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
+
+{
+  "registrationId": "{{device}}",
+  "idScope": "{{ID_SCOPE}}",
+  "symmetricKey": "{{PRIMARY_KEY}}"
+}
+
+@deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
+
+
+
 # -----------------------
+# API: register
+###
+# @name register
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+Authorization: {{deviceSAS}}
+Content-Type: application/json
+
+{
+  "deviceId": "{{device}}",
+  "status": "enabled",
+  "authenticationMechanisms": [
+    {
+      "deviceAuthenticationType": "TpmDeviceAuthenticationMechanism",
+      "endorsementKey": "{{tpmEndorsement}}"
+    }
+  ],
+  "deviceGroupName": "{{deviceGroup}}"
+}
+
+@dr-etag = {{createDR.response.body.eTag}}
 
 
-###  GET ProvisionSettings
-# @name ps
+
+# -----------------------
+# API: provisionSettings
+###
+# @name getPS
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
-@ps-etag = {{ps.response.body.eTag}}
+@ps-etag = {{getPS.response.body.eTag}}
 
 
-###  GET DeviceGroup
-# @name dg
+
+# -----------------------
+# API: deviceGroups
+###
+# @name getDG
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
-@dg-etag = {{dg.response.body.eTag}}
+@dg-etag = {{getDG.response.body.eTag}}
 
 
-### GET DeviceRecord
-# @name dr
+
+# -----------------------
+# API: deviceRecords
+###
+# @name getDR
 GET https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
-@dr-etag = {{dr.response.body.eTag}}
+@dr-etag = {{getDR.response.body.eTag}}
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-# -----------------------
-# Delete Object Model
-# -----------------------
+
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#      ** caution only delete when fully done  **
+# ----------------------------------------------------------------------------------------------------------------------
 
 ### DELETE DeviceRecord
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
