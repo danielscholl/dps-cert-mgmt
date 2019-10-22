@@ -1,14 +1,12 @@
-# Use Case 4 -- Provision Device Using TPM and new Object Model
+# Use Case 4 -- Provision Device using DPS CA and Symmetric Key Attestation
 
-# -----------------------
-# Setup Variables
-# -----------------------
 @unique = uc4
+@certificateAuthority = {{unique}}CertificateAuthority
 @provisionSettings = {{unique}}ProvisionSettings
 @deviceGroup = {{unique}}DeviceGroup
 @groupRecord = {{unique}}GroupRecord
 @device = {{unique}}Device
-@tpmEndorsement = AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEA5DZrM0/0VxccrFqzhSg21VfG2mMR5OqHH70G67ZU5AiTk9eZWGWrYX+AAf7zclhPAFFG+L2HHD0rQWb1GJxrjDB7GM2mk2JvxaoYVe5e942ZyAQCwl959J989mY7FmoXtEjN8H7SECO6xrEPgfCMnXl8zens0Eo3/xpZT9dXVtaGhQu3RRDM4DwRWV8rDvfRB4Y/0dk8B/YQwe0mElAOpSU4EqZe+q27Julvnd9isg2VzZRfs10BlrgKWp1J7yyY+5NE5oB9Mzr+1pn6Vbtdg1d9BpUlfNMD1cKz3azsqSW8BFtX2zUJklfWFX+SFxsPB/mxw9pbLHfn8fJ+zm1TsQ==
+@key = {{PRIMARY_KEY}}
 
 
 # -----------------------
@@ -28,6 +26,22 @@ grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SEC
 
 
 # -----------------------
+# API: certificateAuthorities
+###
+# @name createCA
+PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name:": "{{certificateAuthority}}",
+  "certificateAuthorityType": "PrivatePreviewManagedCertificateAuthority"
+}
+
+@ca-etag = {{createCA.response.body.eTag}}
+
+
+# -----------------------
 # API: provisionSettings
 ###
 # @name createPS
@@ -44,6 +58,10 @@ Content-Type: application/json
     "properties": {
       "desired": {}
     }
+  },
+  "certificateIssuancePolicy": {
+    "certificateAuthorityName": "{{certificateAuthority}}",
+    "validityPeriod": "P1D"
   },
   "reprovisioningSettings": {
     "updateHubAssignment": true,
@@ -89,11 +107,10 @@ Content-Type: application/json
   "status": "enabled",
   "authenticationMechanisms": [
     {
-      "deviceAuthenticationType": "TpmDeviceAuthenticationMechanism",
-      "endorsementKey": "{{tpmEndorsement}}"
+      "deviceAuthenticationType": "SymmetricKeyDeviceAuthenticationMechanism",
+      "symmetricKey": "{{PRIMARY_KEY}}"
     }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  ]
 }
 
 @dr-etag = {{createDR.response.body.eTag}}
@@ -115,28 +132,44 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
 @deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
 
 
+# -----------------------
+# Generate csr
+###
+# @name csrGenerator
+POST https://dpsprivatepreview.azurewebsites.net/api/CSRGenerator
+
+{
+  "subjectName": "{{device}}"
+}
+
+@deviceCSR = {{csrGenerator.response.body.outputs.csr}}
+
 
 # -----------------------
 # API: register
 ###
 # @name register
-PUT https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/deviceRecords/{{device}}?api-version=2019-05-01
+PUT https://global.azure-devices-provisioning.net/{{ID_SCOPE}}/registrations/{{device}}/register?api-version=2019-05-01
 Authorization: {{deviceSAS}}
 Content-Type: application/json
 
 {
-  "deviceId": "{{device}}",
-  "status": "enabled",
-  "authenticationMechanisms": [
-    {
-      "deviceAuthenticationType": "TpmDeviceAuthenticationMechanism",
-      "endorsementKey": "{{tpmEndorsement}}"
-    }
-  ],
-  "deviceGroupName": "{{deviceGroup}}"
+  "registrationId": "{{device}}",
+  "csr": "{{deviceCSR}}",
+  "payload": {}
 }
 
-@dr-etag = {{createDR.response.body.eTag}}
+
+
+# -----------------------
+# API: certificateAuthorities
+###
+# @name getCA
+GET https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+@etag = {{getCA.response.body.eTag}}
 
 
 
@@ -178,7 +211,6 @@ Content-Type: application/json
 
 
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 #      ** caution only delete when fully done  **
 # ----------------------------------------------------------------------------------------------------------------------
@@ -195,14 +227,17 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 If-Match: {{dg-etag}}
 
-### DELETE GroupRecord
-DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/deviceGroups/{{deviceGroup}}/groupRecords/{{groupRecord}}?api-version=2019-05-01
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-If-Match: {{gr-etag}}
-
 ### DELETE ProvisionSettings
 DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/provisioningSettings/{{provisionSettings}}?api-version=2019-05-01
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 If-Match: {{ps-etag}}
+
+# -----------------------
+# API: certificateAuthorities
+###
+# @name deleteCA
+DELETE https://{{DPS_HOST}}.azure-devices-provisioning.net/certificateAuthorities/{{certificateAuthority}}?api-version=2019-05-01
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+If-Match: {{etag}}
