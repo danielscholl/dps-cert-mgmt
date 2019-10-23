@@ -9,7 +9,7 @@
 # Get DPS Access Token
 ###
 # @name dpsToken
-POST https://dpsprivatepreview.azurewebsites.net/api/ServiceToken
+POST https://{{FUNCTIONS-JS}}.azurewebsites.net/api/ServiceToken
 
 {
   "connectionString": "{{DPS_CONNECTIONSTRING}}"
@@ -77,7 +77,7 @@ Authorization: {{serviceSAS}}
 # Get Device Derived Key
 ###
 # @name derivedKey
-POST https://dpsprivatepreview.azurewebsites.net/api/DerivedKey
+POST https://{{FUNCTIONS-JS}}.azurewebsites.net/api/DerivedKey
 
 {
   "registrationId": "{{device}}",
@@ -91,7 +91,7 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DerivedKey
 # Get Device Access Token
 ###
 # @name deviceToken
-POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
+POST https://{{FUNCTIONS-JS}}.azurewebsites.net/api/DeviceToken
 
 {
   "registrationId": "{{device}}",

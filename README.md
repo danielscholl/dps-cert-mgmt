@@ -32,6 +32,8 @@ az ad sp create-for-rbac --name $SP_NAME
 ```json
 "rest-client.environmentVariables": {
   "local": {
+    "FUNCTIONS-JS": "<js function app>",
+    "FUNCTIONS-CORE": "<core function app>",
     "TENANT_ID": "<tenant>",
     "SUBSCRIPTION_ID": "<subscription>",
     "CLIENT_ID": "<appId>",

@@ -9,14 +9,14 @@
 @key = {{PRIMARY_KEY}}
 
 
+
 # -----------------------
 # Get OAuth 2 Token
 ###
 # @name login
-@authUrl = login.microsoftonline.com/{{TENANT_ID}}
 @resource = https%3A%2F%2Fazure-devices-provisioning.net%2F
 
-POST https://{{authUrl}}/oauth2/token HTTP/1.1
+POST https://login.microsoftonline.com/{{TENANT_ID}}/oauth2/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&client_id={{CLIENT_ID}}&client_secret={{CLIENT_SECRET}}&resource={{resource}}
@@ -39,6 +39,7 @@ Content-Type: application/json
 }
 
 @ca-etag = {{createCA.response.body.eTag}}
+
 
 
 # -----------------------
@@ -121,7 +122,7 @@ Content-Type: application/json
 # Generate deviceToken
 ###
 # @name deviceToken
-POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
+POST https://{{FUNCTIONS-JS}}.azurewebsites.net/api/DeviceToken
 
 {
   "registrationId": "{{device}}",
@@ -132,11 +133,12 @@ POST https://dpsprivatepreview.azurewebsites.net/api/DeviceToken
 @deviceSAS = {{deviceToken.response.body.outputs.sasToken}}
 
 
+
 # -----------------------
 # Generate csr
 ###
 # @name csrGenerator
-POST https://dpsprivatepreview.azurewebsites.net/api/CSRGenerator
+POST https://{{FUNCTIONS-CORE}}.azurewebsites.net/api/CSRGenerator
 
 {
   "subjectName": "{{device}}"
