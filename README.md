@@ -51,16 +51,22 @@ az ad sp create-for-rbac --name $SP_NAME
 
 ### API-VERSION = 2019-03-01
 
-1. Use Case 1 -- Individual Enrollement using Symmetric Key
-2. Use Case 2 -- Group Enrollment using Symmetric Keys and Derived Keys
+1. Use Case 1 -- Individual Enrollement using Symmetric Key _`Validated`_
+2. Use Case 2 -- Group Enrollment using Symmetric Keys and Derived Keys _`Validated`_
 
 
 ### API-VERSION = 2019-05-01
 
-3. Use Case 3 -- Provision Device Using Symmetric Key and new Object Model
-4. Use Case 4 -- Provision Device Using TPM and new Object Model
-5. Use Case 5 -- Provision Device Using x509 and new Object Model
-6. Use Case 6 -- Provision Device using DPS CA and new Object Model
-7. Use Case 7 -- Provision Devices in Bulk using Symmetric Key and new Object Model
+3. Use Case 3 -- Provision Device Using Symmetric Key and new Object Model _`Validated`_
+4. Use Case 4 -- Provision Device using DPS CA and Symmetric Key Attestation _`Pending Register`_
+5. Use Case 5 -- Provision Device Using TPM and new Object Model  _`Pending Register`_
+6. Use Case 6 -- Provision Device Using x509 and new Object Model  _`Pending`_
+7. Use Case 7 -- Provision Devices in Bulk using Symmetric Key and new Object Model  _`Pending`_
+
+- Object Model Sample -- CertAuthority  _`Validated`_
+- Object Model Sample -- ProvisioningSettings  _`Validated`_
+- Object Model Sample -- DeviceGroup  _`Validated`_
+- Object Model Sample -- GroupRecord  _`Validated`_
+- Object Model Sample -- DeviceRecord  _`Validated`_
 
 
